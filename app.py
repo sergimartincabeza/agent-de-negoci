@@ -1,15 +1,14 @@
-
 import streamlit as st
-from langchain.llms import OpenAI
+from langchain_openai import OpenAI  # Importació correcta amb el nou paquet
 from langchain.chains import RetrievalQA
 from langchain.vectorstores import FAISS
 from langchain.embeddings.openai import OpenAIEmbeddings
 import os
 
-# Configuración de la página
+# Configuració de la pàgina
 st.set_page_config(page_title="IA Premium", page_icon="🤖", layout="wide")
 
-# Sidebar con logo
+# Sidebar amb logo
 st.sidebar.image("logo.png", use_column_width=True)
 st.sidebar.title("Menú")
 st.sidebar.info("Carrega documents per millorar les respostes")
