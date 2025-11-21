@@ -30,3 +30,4 @@ if st.button("Consulta IA"):
     else:
         st.info("Funcionalitat RAG en desenvolupament: resposta simulada.")
         st.write(f"Resposta per a: {query}")
+dfhs
