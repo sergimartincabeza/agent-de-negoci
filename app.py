@@ -1,6 +1,7 @@
 import streamlit as st
 import os
 import requests
+import time
 from pinecone import Pinecone
 from sentence_transformers import SentenceTransformer
 from PyPDF2 import PdfReader
@@ -43,6 +44,10 @@ def extract_text(file_path):
             return f.read()
     return ""
 
+# Funció per dividir text en chunks
+def chunk_text(text, chunk_size=1000):
+    return [text[i:i+chunk_size] for i in range(0, len(text), chunk_size)]
+
 # Funció per cridar OpenRouter
 def get_openrouter_response(prompt):
     url = "https://openrouter.ai/api/v1/chat/completions"
@@ -81,22 +86,24 @@ if menu == "Pujar documents":
             with open(file_path, "wb") as f:
                 f.write(uploaded_file.read())
             st.success(f"Arxiu {uploaded_file.name} pujat correctament.")
-            # Extreure text i generar embeddings
+            # Extreure text i generar embeddings per chunks
             text = extract_text(file_path)
             if text.strip():
-                embedding = embedder.encode(text).tolist()
-                # Format correcte per Pinecone
-                index.upsert(vectors=[
-                    {
-                        "id": uploaded_file.name,
-                        "values": embedding,
-                        "metadata": {
-                            "filename": uploaded_file.name,
-                            "content": text[:500]
+                chunks = chunk_text(text)
+                for i, chunk in enumerate(chunks):
+                    embedding = embedder.encode(chunk).tolist()
+                    index.upsert(vectors=[
+                        {
+                            "id": f"{uploaded_file.name}_chunk{i}",
+                            "values": embedding,
+                            "metadata": {
+                                "filename": uploaded_file.name,
+                                "content": chunk[:500]
+                            }
                         }
-                    }
-                ])
-                st.info(f"Embeddings enviats a Pinecone per {uploaded_file.name}.")
+                    ], namespace="default")
+                    time.sleep(0.5)  # Evitar rate limit
+                st.info(f"{len(chunks)} fragments enviats a Pinecone per {uploaded_file.name}.")
     # Mostrar llista de documents pujats
     st.subheader("📄 Documents pujats:")
     docs = os.listdir(UPLOAD_FOLDER)
@@ -111,7 +118,7 @@ elif menu == "Consulta IA":
             with st.spinner("Generant resposta..."):
                 # Recuperar context de Pinecone
                 query_embedding = embedder.encode(user_input).tolist()
-                results = index.query(vector=query_embedding, top_k=3, include_metadata=True)
+                results = index.query(vector=query_embedding, top_k=5, include_metadata=True, namespace="default")
                 context_texts = [match.metadata.get("content", "") for match in results.matches]
                 context = "\n".join(context_texts)[:1500]  # Limitem a 1500 caràcters
                 # Prompt reforçat
