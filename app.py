@@ -15,8 +15,10 @@ st.sidebar.title("Portal IA")
 menu = st.sidebar.radio("Menú", ["Consulta IA", "Pujar documents"])
 
 # Inicialitzar Pinecone
-pinecone.init(api_key=st.secrets["PineconeAPI"], environment="us-east-1-aws")
-index = pinecone.Index("documents-index-5l8n38g")
+from pinecone import Pinecone
+
+pc = Pinecone(api_key=st.secrets["PineconeAPI"])
+index = pc.Index("documents-index-5l8n38g")
 
 # Model per embeddings
 embedder = SentenceTransformer("all-MiniLM-L6-v2")
