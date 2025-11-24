@@ -43,7 +43,7 @@ def extract_text(file_path):
             return f.read()
     return ""
 
-# Funció per cridar OpenRouter amb rol system i debug
+# Funció per cridar OpenRouter
 def get_openrouter_response(prompt):
     url = "https://openrouter.ai/api/v1/chat/completions"
     headers = {
@@ -53,7 +53,7 @@ def get_openrouter_response(prompt):
     data = {
         "model": "meta-llama/llama-3.2-3b-instruct:free",  # Model gratuït estable
         "messages": [
-            {"role": "system", "content": "Ets un expert en immobiliària a Catalunya. Respon sempre en català."},
+            {"role": "system", "content": "Ets el meu assistent; tu i jo som experts en temes immobiliaris i tots els relacionats amb la immobiliària a Catalunya. Respon el l'idioma que t'hagin fet la pregunta. Quan et fan una pregunta has de proporcionar una resposta d'acord amb la documentació que tenim pujada a pinecone, i si no hi trobes la resposta mires als recursos oficials de la Generailtat de Catalunya i de l'Estat Espanyol en segon terme."},
             {"role": "user", "content": prompt}
         ],
         "temperature": 0.7,
@@ -63,7 +63,6 @@ def get_openrouter_response(prompt):
         response = requests.post(url, headers=headers, json=data, timeout=30)
         if response.status_code == 200:
             json_resp = response.json()
-            st.write("DEBUG:", json_resp)  # Mostra la resposta completa per diagnòstic
             return json_resp.get("choices", [{}])[0].get("message", {}).get("content", "Resposta buida")
         else:
             return f"Error {response.status_code}: {response.text}"
@@ -91,10 +90,7 @@ if menu == "Pujar documents":
     # Mostrar llista de documents pujats
     st.subheader("📄 Documents pujats:")
     docs = os.listdir(UPLOAD_FOLDER)
-    if docs:
-        st.write(docs)
-    else:
-        st.write("Encara no hi ha documents pujats.")
+    st.write(docs if docs else "Encara no hi ha documents pujats.")
 
 # Menú consulta IA
 elif menu == "Consulta IA":
@@ -107,12 +103,12 @@ elif menu == "Consulta IA":
                 query_embedding = embedder.encode(user_input).tolist()
                 results = index.query(vector=query_embedding, top_k=3, include_metadata=True)
                 context_texts = [match.metadata.get("content", "") for match in results.matches]
-                context = "\n".join(context_texts)
+                context = "\n".join(context_texts)[:1500]  # Limitem a 1500 caràcters
                 # Prompt reforçat
                 PROMPT_CONTEXT = """
                 Contesta com un expert en immobiliària a Catalunya.
-                Prioritza informació dels documents si és rellevant.
-                Si no hi ha informació als documents, explica-ho i dona la millor resposta possible sobre el sector immobiliari.
+                Utilitza la informació dels documents pujats si és rellevant.
+                Si no hi ha informació als documents, indica-ho i dona la millor resposta possible.
                 """
                 prompt = f"{PROMPT_CONTEXT}\nContext:\n{context}\nPregunta: {user_input}"
                 resposta = get_openrouter_response(prompt)
