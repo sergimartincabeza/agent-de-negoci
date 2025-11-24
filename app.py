@@ -51,7 +51,7 @@ def get_openrouter_response(prompt):
         "Content-Type": "application/json"
     }
     data = {
-        "model": "huggingface/openchat-3.5-0106",  # Model gratuït i fiable
+        "model": "openchat/openchat-3.6",  # Model gratuït actualitzat
         "messages": [
             {"role": "system", "content": "Ets un expert en immobiliària a Catalunya. Respon sempre en català."},
             {"role": "user", "content": prompt}
@@ -108,7 +108,6 @@ elif menu == "Consulta IA":
                 results = index.query(vector=query_embedding, top_k=3, include_metadata=True)
                 context_texts = [match.metadata.get("content", "") for match in results.matches]
                 context = "\n".join(context_texts)
-
                 # Prompt reforçat
                 PROMPT_CONTEXT = """
                 Contesta com un expert en immobiliària a Catalunya.
@@ -116,8 +115,6 @@ elif menu == "Consulta IA":
                 Si no hi ha informació als documents, explica-ho i dona la millor resposta possible sobre el sector immobiliari.
                 """
                 prompt = f"{PROMPT_CONTEXT}\nContext:\n{context}\nPregunta: {user_input}"
-
                 resposta = get_openrouter_response(prompt)
-            st.success(resposta)
+                st.success(resposta)
         else:
-            st.warning("Introdueix una pregunta abans de continuar.")
