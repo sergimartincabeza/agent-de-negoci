@@ -1,6 +1,6 @@
 streamlit
 transformers
 sentence-transformers
-pinecone-client
+pinecone
 PyPDF2
 python-docx
