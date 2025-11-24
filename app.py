@@ -53,7 +53,7 @@ def get_openrouter_response(prompt):
     data = {
         "model": "meta-llama/llama-3.2-3b-instruct:free",  # Model gratuït estable
         "messages": [
-            {"role": "system", "content": "Ets el meu assistent; tu i jo som experts en temes immobiliaris i tots els relacionats amb la immobiliària a Catalunya. Respon el l'idioma que t'hagin fet la pregunta. Quan et fan una pregunta has de proporcionar una resposta d'acord amb la documentació que tenim pujada a pinecone, i si no hi trobes la resposta mires als recursos oficials de la Generailtat de Catalunya i de l'Estat Espanyol en segon terme."},
+            {"role": "system", "content": "Ets un expert en immobiliària a Catalunya. Respon sempre en català."},
             {"role": "user", "content": prompt}
         ],
         "temperature": 0.7,
@@ -106,11 +106,11 @@ elif menu == "Consulta IA":
                 context = "\n".join(context_texts)[:1500]  # Limitem a 1500 caràcters
                 # Prompt reforçat
                 PROMPT_CONTEXT = """
-                Contesta com un expert en immobiliària a Catalunya.
-                Utilitza la informació dels documents pujats si és rellevant.
-                Si no hi ha informació als documents, indica-ho i dona la millor resposta possible.
+                Prioritza absolutament la informació dels documents pujats.
+                Si trobes dades al context, utilitza-les com a font principal.
+                Si no hi ha informació, indica-ho explícitament.
                 """
-                prompt = f"{PROMPT_CONTEXT}\nContext:\n{context}\nPregunta: {user_input}"
+                prompt = f"{PROMPT_CONTEXT}\nCONTEXT (informació dels documents pujats):\n{context}\nPREGUNTA: {user_input}"
                 resposta = get_openrouter_response(prompt)
                 st.success(resposta)
         else:
