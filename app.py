@@ -16,7 +16,7 @@ menu = st.sidebar.radio("Menú", ["Consulta IA", "Pujar documents"])
 
 # Inicialitzar Pinecone
 pc = Pinecone(api_key=st.secrets["PineconeAPI"])
-index_name = "documents-index"  # Nom curt del teu índex
+index_name = "documents-index"
 indexes = [idx.name for idx in pc.list_indexes()]
 if index_name not in indexes:
     st.error(f"L'índex '{index_name}' no existeix. Crea'l a Pinecone abans de continuar.")
@@ -43,7 +43,7 @@ def extract_text(file_path):
             return f.read()
     return ""
 
-# Funció per cridar OpenRouter
+# Funció per cridar OpenRouter amb control d'errors
 def get_openrouter_response(prompt):
     url = "https://openrouter.ai/api/v1/chat/completions"
     headers = {
@@ -55,11 +55,16 @@ def get_openrouter_response(prompt):
         "messages": [{"role": "user", "content": prompt}],
         "temperature": 0.7
     }
-    response = requests.post(url, headers=headers, json=data)
-    if response.status_code == 200:
-        return response.json()["choices"][0]["message"]["content"]
-    else:
-        return f"Error: {response.status_code} - {response.text}"
+    try:
+        response = requests.post(url, headers=headers, json=data, timeout=30)
+        if response.status_code == 200:
+            return response.json()["choices"][0]["message"]["content"]
+        else:
+            return f"Error {response.status_code}: {response.text}"
+    except requests.exceptions.Timeout:
+        return "Error: Timeout en la connexió amb OpenRouter."
+    except Exception as e:
+        return f"Error inesperat: {str(e)}"
 
 # Menú pujada documents
 if menu == "Pujar documents":
@@ -71,13 +76,19 @@ if menu == "Pujar documents":
             with open(file_path, "wb") as f:
                 f.write(uploaded_file.read())
             st.success(f"Arxiu {uploaded_file.name} pujat correctament.")
-
             # Extreure text i generar embeddings
             text = extract_text(file_path)
             if text.strip():
                 embedding = embedder.encode(text).tolist()
-                index.upsert([(uploaded_file.name, embedding, {"filename": uploaded_file.name})])
+                index.upsert([(uploaded_file.name, embedding, {"filename": uploaded_file.name, "content": text[:500]})])
                 st.info(f"Embeddings enviats a Pinecone per {uploaded_file.name}.")
+    # Mostrar llista de documents pujats
+    st.subheader("📄 Documents pujats:")
+    docs = os.listdir(UPLOAD_FOLDER)
+    if docs:
+        st.write(docs)
+    else:
+        st.write("Encara no hi ha documents pujats.")
 
 # Menú consulta IA
 elif menu == "Consulta IA":
@@ -89,11 +100,10 @@ elif menu == "Consulta IA":
                 # Recuperar context de Pinecone
                 query_embedding = embedder.encode(user_input).tolist()
                 results = index.query(vector=query_embedding, top_k=3, include_metadata=True)
-                context = "\n".join([match.metadata.get("filename", "") for match in results.matches])
-
-                # Prompt amb context
-                prompt = f"Context: {context}\nPregunta: {user_input}"
+                context_texts = [match.metadata.get("content", "") for match in results.matches]
+                context = "\n".join(context_texts)
+                # Prompt enriquit amb context real
+                prompt = f"Context:\n{context}\nPregunta: {user_input}"
                 resposta = get_openrouter_response(prompt)
             st.success(resposta)
         else:
-            st.warning("Introdueix una pregunta abans de continuar.")
