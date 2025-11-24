@@ -51,7 +51,7 @@ def get_openrouter_response(prompt):
         "Content-Type": "application/json"
     }
     data = {
-        "model": "openchat/openchat-3.6",  # Model gratuït actualitzat
+        "model": "deepseek/deepseek-r1:free",  # Model gratuït actualitzat
         "messages": [
             {"role": "system", "content": "Ets un expert en immobiliària a Catalunya. Respon sempre en català."},
             {"role": "user", "content": prompt}
