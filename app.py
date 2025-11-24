@@ -43,7 +43,7 @@ def extract_text(file_path):
             return f.read()
     return ""
 
-# Funció per cridar OpenRouter amb control d'errors
+# Funció per cridar OpenRouter amb model gratuït
 def get_openrouter_response(prompt):
     url = "https://openrouter.ai/api/v1/chat/completions"
     headers = {
@@ -51,9 +51,10 @@ def get_openrouter_response(prompt):
         "Content-Type": "application/json"
     }
     data = {
-        "model": "openai/gpt-4",  # Pots canviar el model
+        "model": "mistral/mistral-7b-instruct",  # Model gratuït
         "messages": [{"role": "user", "content": prompt}],
-        "temperature": 0.7
+        "temperature": 0.7,
+        "max_tokens": 512  # Limitem tokens per evitar errors
     }
     try:
         response = requests.post(url, headers=headers, json=data, timeout=30)
