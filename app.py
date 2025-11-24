@@ -29,10 +29,12 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 def extract_text(file_path):
     if file_path.endswith(".pdf"):
         reader = PdfReader(file_path)
-        return "\n".join(page.extract_text() for page in reader.pages if page.extract_text())
+        return "
+".join(page.extract_text() for page in reader.pages if page.extract_text())
     elif file_path.endswith(".docx"):
         doc = docx.Document(file_path)
-        return "\n".join([p.text for p in doc.paragraphs])
+        return "
+".join([p.text for p in doc.paragraphs])
     elif file_path.endswith(".txt"):
         with open(file_path, "r", encoding="utf-8") as f:
             return f.read()
@@ -40,7 +42,7 @@ def extract_text(file_path):
 
 # Menú pujada documents
 if menu == "Pujar documents":
-    st.header("F4C2 Pujar documents")
+    st.header("📂 Pujar documents")
     uploaded_files = st.file_uploader("Selecciona arxius", type=["pdf", "docx", "txt"], accept_multiple_files=True)
     if uploaded_files:
         for uploaded_file in uploaded_files:
@@ -65,33 +67,8 @@ elif menu == "Consulta IA":
             # Recuperar context de Pinecone
             query_embedding = embedder.encode(user_input).tolist()
             results = index.query(vector=query_embedding, top_k=3, include_metadata=True)
-            context = "\n".join([match.metadata.get("filename", "") for match in results.matches])
-
-            # Model Flan-T5
-            qa_pipeline = pipeline("text2text-generation", model="google/flan-t5-small")
-            prompt = f"Context: {context}\nPregunta: {user_input}"
-            resposta = qa_pipeline(prompt)[0]['generated_text']
-            st.success(resposta)
-        else:
-            st.warning("Introdueix una pregunta abans de continuar.")
-
-# Model Flan-T5
-            qa_pipeline = pipeline("text2text-generation", model="google/flan-t5-small")
-            prompt = f"Context: {context}\nPregunta: {user_input}"
-            resposta = qa_pipeline(prompt)[0]['generated_text']
-            st.success(resposta)
-        else:
-            st.warning("Introdueix una pregunta abans de continuar.")# Menú consulta IA
-elif menu == "Consulta IA":
-    st.header("F50D Consulta IA amb RAG")
-    user_input = st.text_area("Escriu la teva pregunta:")
-    if st.button("Generar resposta"):
-        if user_input.strip():
-            # Recuperar context de Pinecone
-            query_embedding = embedder.encode(user_input).tolist()
-            results = index.query(vector=query_embedding, top_k=3, include_metadata=True)
-            context = ""
-    .join([match.metadata.get("filename", "") for match in results.matches])
+            context = "
+".join([match.metadata.get("filename", "") for match in results.matches])
 
             # Model Flan-T5
             qa_pipeline = pipeline("text2text-generation", model="google/flan-t5-small")
