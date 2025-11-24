@@ -29,8 +29,8 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 def extract_text(file_path):
     if file_path.endswith(".pdf"):
         reader = PdfReader(file_path)
-        return "
-".join(page.extract_text() for page in reader.pages if page.extract_text())
+        return ""
+    .join(page.extract_text() for page in reader.pages if page.extract_text())
     elif file_path.endswith(".docx"):
         doc = docx.Document(file_path)
         return "
