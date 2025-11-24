@@ -54,7 +54,7 @@ def get_openrouter_response(prompt):
         "model": "mistralai/mistral-7b-instruct",  # Model gratuït
         "messages": [{"role": "user", "content": prompt}],
         "temperature": 0.7,
-        "max_tokens": 512  # Limitem tokens per evitar errors
+        "max_tokens": 512
     }
     try:
         response = requests.post(url, headers=headers, json=data, timeout=30)
@@ -103,8 +103,14 @@ elif menu == "Consulta IA":
                 results = index.query(vector=query_embedding, top_k=3, include_metadata=True)
                 context_texts = [match.metadata.get("content", "") for match in results.matches]
                 context = "\n".join(context_texts)
-                # Prompt enriquit amb context real
-                prompt = f"Context:\n{context}\nPregunta: {user_input}"
+
+                # Prompt amb instrucció fixa + context
+                PROMPT_CONTEXT = """
+                Contesta d'acord amb conceptes relacionats amb el mercat immobiliari i, si és possible, amb els documents de referència que tens.
+                Prioritza informació dels documents si és rellevant. Si no hi ha informació als documents, dona la millor resposta possible sobre immobiliària.
+                """
+                prompt = f"{PROMPT_CONTEXT}\nContext:\n{context}\nPregunta: {user_input}"
+
                 resposta = get_openrouter_response(prompt)
             st.success(resposta)
         else:
