@@ -51,7 +51,7 @@ def get_openrouter_response(prompt):
         "Content-Type": "application/json"
     }
     data = {
-        "model": "mistral/mistral-7b-instruct",  # Model gratuït
+        "model": "mistralai/mistral-7b-instruct",  # Model gratuït
         "messages": [{"role": "user", "content": prompt}],
         "temperature": 0.7,
         "max_tokens": 512  # Limitem tokens per evitar errors
