@@ -58,6 +58,31 @@ if menu == "Pujar documents":
 
 # Menú consulta IA
 elif menu == "Consulta IA":
+    st.header("🔍 Consulta IA amb RAG")
+    user_input = st.text_area("Escriu la teva pregunta:")
+    if st.button("Generar resposta"):
+        if user_input.strip():
+            # Recuperar context de Pinecone
+            query_embedding = embedder.encode(user_input).tolist()
+            results = index.query(vector=query_embedding, top_k=3, include_metadata=True)
+            context = "\n".join([match.metadata.get("filename", "") for match in results.matches])
+
+            # Model Flan-T5
+            qa_pipeline = pipeline("text2text-generation", model="google/flan-t5-small")
+            prompt = f"Context: {context}\nPregunta: {user_input}"
+            resposta = qa_pipeline(prompt)[0]['generated_text']
+            st.success(resposta)
+        else:
+            st.warning("Introdueix una pregunta abans de continuar.")
+
+# Model Flan-T5
+            qa_pipeline = pipeline("text2text-generation", model="google/flan-t5-small")
+            prompt = f"Context: {context}\nPregunta: {user_input}"
+            resposta = qa_pipeline(prompt)[0]['generated_text']
+            st.success(resposta)
+        else:
+            st.warning("Introdueix una pregunta abans de continuar.")# Menú consulta IA
+elif menu == "Consulta IA":
     st.header("F50D Consulta IA amb RAG")
     user_input = st.text_area("Escriu la teva pregunta:")
     if st.button("Generar resposta"):
