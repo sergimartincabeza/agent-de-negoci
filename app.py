@@ -29,12 +29,10 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 def extract_text(file_path):
     if file_path.endswith(".pdf"):
         reader = PdfReader(file_path)
-        return "
-".join(page.extract_text() for page in reader.pages if page.extract_text())
+        return "\n".join(page.extract_text() for page in reader.pages if page.extract_text())
     elif file_path.endswith(".docx"):
         doc = docx.Document(file_path)
-        return "
-".join([p.text for p in doc.paragraphs])
+        return "\n".join([p.text for p in doc.paragraphs])
     elif file_path.endswith(".txt"):
         with open(file_path, "r", encoding="utf-8") as f:
             return f.read()
@@ -67,13 +65,11 @@ elif menu == "Consulta IA":
             # Recuperar context de Pinecone
             query_embedding = embedder.encode(user_input).tolist()
             results = index.query(vector=query_embedding, top_k=3, include_metadata=True)
-            context = "
-".join([match.metadata.get("filename", "") for match in results.matches])
+            context = "\n".join([match.metadata.get("filename", "") for match in results.matches])
 
             # Model Flan-T5
             qa_pipeline = pipeline("text2text-generation", model="google/flan-t5-small")
-            prompt = f"Context: {context}
-Pregunta: {user_input}"
+            prompt = f"Context: {context}\nPregunta: {user_input}"
             resposta = qa_pipeline(prompt)[0]['generated_text']
             st.success(resposta)
         else:
