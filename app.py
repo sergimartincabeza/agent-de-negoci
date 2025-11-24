@@ -1,13 +1,13 @@
 import streamlit as st
 import os
-import pinecone
-from transformers import pipeline
+import requests
+from pinecone import Pinecone
 from sentence_transformers import SentenceTransformer
 from PyPDF2 import PdfReader
 import docx
 
 # Configuració pàgina
-st.set_page_config(page_title="Portal IA Corporatiu", layout="wide")
+st.set_page_config(page_title="Assistent virtual de Sergi Martín, Realtor", layout="wide")
 
 # Sidebar amb logo i menú
 st.sidebar.image("logo.png", use_column_width=True)
@@ -15,10 +15,13 @@ st.sidebar.title("Portal IA")
 menu = st.sidebar.radio("Menú", ["Consulta IA", "Pujar documents"])
 
 # Inicialitzar Pinecone
-from pinecone import Pinecone
-
 pc = Pinecone(api_key=st.secrets["PineconeAPI"])
-index = pc.Index("documents-index")
+index_name = "documents-index"  # Nom curt del teu índex
+indexes = [idx.name for idx in pc.list_indexes()]
+if index_name not in indexes:
+    st.error(f"L'índex '{index_name}' no existeix. Crea'l a Pinecone abans de continuar.")
+else:
+    index = pc.Index(index_name)
 
 # Model per embeddings
 embedder = SentenceTransformer("all-MiniLM-L6-v2")
@@ -40,6 +43,24 @@ def extract_text(file_path):
             return f.read()
     return ""
 
+# Funció per cridar OpenRouter
+def get_openrouter_response(prompt):
+    url = "https://openrouter.ai/api/v1/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {st.secrets['OpenRouterAPI']}",
+        "Content-Type": "application/json"
+    }
+    data = {
+        "model": "openai/gpt-4",  # Pots canviar el model
+        "messages": [{"role": "user", "content": prompt}],
+        "temperature": 0.7
+    }
+    response = requests.post(url, headers=headers, json=data)
+    if response.status_code == 200:
+        return response.json()["choices"][0]["message"]["content"]
+    else:
+        return f"Error: {response.status_code} - {response.text}"
+
 # Menú pujada documents
 if menu == "Pujar documents":
     st.header("📂 Pujar documents")
@@ -60,19 +81,19 @@ if menu == "Pujar documents":
 
 # Menú consulta IA
 elif menu == "Consulta IA":
-    st.header("Assistent virtual de Sergi Martín, Realtor")
+    st.header("🔍 Consulta IA amb RAG")
     user_input = st.text_area("Escriu la teva pregunta:")
     if st.button("Generar resposta"):
         if user_input.strip():
-            # Recuperar context de Pinecone
-            query_embedding = embedder.encode(user_input).tolist()
-            results = index.query(vector=query_embedding, top_k=3, include_metadata=True)
-            context = "\n".join([match.metadata.get("filename", "") for match in results.matches])
+            with st.spinner("Generant resposta..."):
+                # Recuperar context de Pinecone
+                query_embedding = embedder.encode(user_input).tolist()
+                results = index.query(vector=query_embedding, top_k=3, include_metadata=True)
+                context = "\n".join([match.metadata.get("filename", "") for match in results.matches])
 
-            # Model Flan-T5
-            qa_pipeline = pipeline("text2text-generation", model="google/flan-t5-small")
-            prompt = f"Context: {context}\nPregunta: {user_input}"
-            resposta = qa_pipeline(prompt)[0]['generated_text']
+                # Prompt amb context
+                prompt = f"Context: {context}\nPregunta: {user_input}"
+                resposta = get_openrouter_response(prompt)
             st.success(resposta)
         else:
             st.warning("Introdueix una pregunta abans de continuar.")
