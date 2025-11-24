@@ -107,3 +107,4 @@ elif menu == "Consulta IA":
                 resposta = get_openrouter_response(prompt)
             st.success(resposta)
         else:
+            st.warning("Introdueix una pregunta abans de continuar.")
