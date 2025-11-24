@@ -18,7 +18,7 @@ menu = st.sidebar.radio("Menú", ["Consulta IA", "Pujar documents"])
 from pinecone import Pinecone
 
 pc = Pinecone(api_key=st.secrets["PineconeAPI"])
-index = pc.Index("documents-index-5l8n38g")
+index = pc.Index("documents-index")
 
 # Model per embeddings
 embedder = SentenceTransformer("all-MiniLM-L6-v2")
