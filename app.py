@@ -67,8 +67,8 @@ elif menu == "Consulta IA":
             # Recuperar context de Pinecone
             query_embedding = embedder.encode(user_input).tolist()
             results = index.query(vector=query_embedding, top_k=3, include_metadata=True)
-            context = "
-".join([match.metadata.get("filename", "") for match in results.matches])
+            context = ""
+    .join([match.metadata.get("filename", "") for match in results.matches])
 
             # Model Flan-T5
             qa_pipeline = pipeline("text2text-generation", model="google/flan-t5-small")
