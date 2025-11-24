@@ -43,7 +43,7 @@ def extract_text(file_path):
             return f.read()
     return ""
 
-# Funció per cridar OpenRouter amb debug
+# Funció per cridar OpenRouter amb rol system i debug
 def get_openrouter_response(prompt):
     url = "https://openrouter.ai/api/v1/chat/completions"
     headers = {
@@ -51,8 +51,11 @@ def get_openrouter_response(prompt):
         "Content-Type": "application/json"
     }
     data = {
-        "model": "mistralai/mistral-7b-instruct",  # Model gratuït
-        "messages": [{"role": "user", "content": prompt}],
+        "model": "openchat/openchat-3.5",  # Model gratuït i fiable
+        "messages": [
+            {"role": "system", "content": "Ets un expert en immobiliària a Catalunya. Respon sempre en català."},
+            {"role": "user", "content": prompt}
+        ],
         "temperature": 0.7,
         "max_tokens": 512
     }
