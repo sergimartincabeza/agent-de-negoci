@@ -36,12 +36,12 @@ def extract_text(file_path):
     elif file_path.endswith(".txt"):
         with open(file_path, "r", encoding="utf-8") as f:
             return f.read()
-    return ""
-    .join([p.text for p in doc.paragraphs])
+       return "\n".join([p.text for p in doc.paragraphs])
+    
     elif file_path.endswith(".txt"):
         with open(file_path, "r", encoding="utf-8") as f:
             return f.read()
-    return ""
+    return "\n"
 
 # Menú pujada documents
 if menu == "Pujar documents":
