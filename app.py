@@ -85,7 +85,17 @@ if menu == "Pujar documents":
             text = extract_text(file_path)
             if text.strip():
                 embedding = embedder.encode(text).tolist()
-                index.upsert([(uploaded_file.name, embedding, {"filename": uploaded_file.name, "content": text[:500]})])
+                # Format correcte per Pinecone
+                index.upsert(vectors=[
+                    {
+                        "id": uploaded_file.name,
+                        "values": embedding,
+                        "metadata": {
+                            "filename": uploaded_file.name,
+                            "content": text[:500]
+                        }
+                    }
+                ])
                 st.info(f"Embeddings enviats a Pinecone per {uploaded_file.name}.")
     # Mostrar llista de documents pujats
     st.subheader("📄 Documents pujats:")
