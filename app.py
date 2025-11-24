@@ -43,7 +43,7 @@ def extract_text(file_path):
             return f.read()
     return ""
 
-# Funció per cridar OpenRouter amb model gratuït
+# Funció per cridar OpenRouter amb debug
 def get_openrouter_response(prompt):
     url = "https://openrouter.ai/api/v1/chat/completions"
     headers = {
@@ -59,7 +59,9 @@ def get_openrouter_response(prompt):
     try:
         response = requests.post(url, headers=headers, json=data, timeout=30)
         if response.status_code == 200:
-            return response.json()["choices"][0]["message"]["content"]
+            json_resp = response.json()
+            st.write("DEBUG:", json_resp)  # Mostra la resposta completa per diagnòstic
+            return json_resp.get("choices", [{}])[0].get("message", {}).get("content", "Resposta buida")
         else:
             return f"Error {response.status_code}: {response.text}"
     except requests.exceptions.Timeout:
@@ -104,10 +106,11 @@ elif menu == "Consulta IA":
                 context_texts = [match.metadata.get("content", "") for match in results.matches]
                 context = "\n".join(context_texts)
 
-                # Prompt amb instrucció fixa + context
+                # Prompt reforçat
                 PROMPT_CONTEXT = """
-                Contesta d'acord amb conceptes relacionats amb el mercat immobiliari i, si és possible, amb els documents de referència que tens.
-                Prioritza informació dels documents si és rellevant. Si no hi ha informació als documents, dona la millor resposta possible sobre immobiliària.
+                Contesta com un expert en immobiliària a Catalunya.
+                Prioritza informació dels documents si és rellevant.
+                Si no hi ha informació als documents, explica-ho i dona la millor resposta possible sobre el sector immobiliari.
                 """
                 prompt = f"{PROMPT_CONTEXT}\nContext:\n{context}\nPregunta: {user_input}"
 
