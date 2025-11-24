@@ -117,4 +117,3 @@ elif menu == "Consulta IA":
                 prompt = f"{PROMPT_CONTEXT}\nContext:\n{context}\nPregunta: {user_input}"
                 resposta = get_openrouter_response(prompt)
                 st.success(resposta)
-        else:
