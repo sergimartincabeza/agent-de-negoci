@@ -51,7 +51,7 @@ def get_openrouter_response(prompt):
         "Content-Type": "application/json"
     }
     data = {
-        "model": "deepseek/deepseek-r1:free",  # Model gratuït actualitzat
+        "model": "meta-llama/llama-3.2-3b-instruct:free",  # Model gratuït estable
         "messages": [
             {"role": "system", "content": "Ets un expert en immobiliària a Catalunya. Respon sempre en català."},
             {"role": "user", "content": prompt}
@@ -117,3 +117,5 @@ elif menu == "Consulta IA":
                 prompt = f"{PROMPT_CONTEXT}\nContext:\n{context}\nPregunta: {user_input}"
                 resposta = get_openrouter_response(prompt)
                 st.success(resposta)
+        else:
+            st.warning("Introdueix una pregunta abans de continuar.")
