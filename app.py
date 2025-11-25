@@ -111,7 +111,7 @@ if menu == "Pujar documents":
 
 # Menú consulta IA
 elif menu == "Consulta IA":
-    st.header("🔍 Consulta IA amb RAG")
+    st.header("Assistent de negoci Sergi Martín, Realtor")
     user_input = st.text_area("Escriu la teva pregunta:")
     if st.button("Generar resposta"):
         if user_input.strip():
